@@ -23,6 +23,26 @@ export const GAMES: Game[] = [
     url: 'internal'
   },
   {
+    id: 'moto-x3m',
+    title: 'MOTO X3M',
+    category: GameCategory.DRIVING,
+    thumbnail: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=400&h=250',
+    description: 'Pilot high-torque kinetic cycles across unstable terrain. Execute mid-air maneuvers to stabilize your neural sync and reach the extraction point.',
+    rating: 4.9,
+    tags: ['racing', 'stunts', 'physics'],
+    url: 'https://www.onlinegames.io/games/2024/gm/moto-x3m/index.html'
+  },
+  {
+    id: 'riddle-school-transfer',
+    title: 'RIDDLE SCHOOL TRANSFER',
+    category: GameCategory.PUZZLE,
+    thumbnail: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&q=80&w=400&h=250',
+    description: 'A classic puzzle adventure. Use your logic and deductive reasoning to escape the facility and transfer to the next sector.',
+    rating: 4.7,
+    tags: ['puzzle', 'escape', 'adventure'],
+    url: 'https://cloud.onlinegames.io/games/2025/flash/riddle-school-transfer/index.html'
+  },
+  {
     id: 'warstrike',
     title: 'WARSTRIKE',
     category: GameCategory.ACTION,
