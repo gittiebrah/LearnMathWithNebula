@@ -23,6 +23,17 @@ export const GAMES: Game[] = [
     url: 'internal'
   },
   {
+    id: '8-ball-billiards-classic',
+    title: '8 BALL BILLIARDS CLASSIC',
+    category: GameCategory.ARCADE,
+    thumbnail: 'https://images.unsplash.com/photo-1538332576228-eb5b4c4de6f5?auto=format&fit=crop&q=80&w=400&h=250',
+    description: 'Calibrate gravitational trajectories in this high-fidelity kinetic sphere simulation. Master the art of momentum transfer within the localized vacuum chamber.',
+    rating: 4.6,
+    tags: ['classic', 'physics', 'simulation'],
+    url: 'https://8-ball-billiards-classic.game-files.crazygames.com/8-ball-billiards-classic/10/index.html',
+    warning: 'UPLINK INSTABILITY: 80% PROBABILITY OF FIREWALL INTERFERENCE DETECTED.'
+  },
+  {
     id: 'load-up-and-kill',
     title: 'LOAD UP AND KILL',
     category: GameCategory.ACTION,
