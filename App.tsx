@@ -5,23 +5,55 @@ import { Game, GameCategory } from './types';
 import GameCard from './components/GameCard';
 import AIAssistant from './components/AIAssistant';
 import NebulaSnakeGame from './components/NebulaSnakeGame';
+import NeuralMathMatrix from './components/NeuralMathMatrix';
 import { getGameInsight } from './services/geminiService';
 
 const App: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<GameCategory | 'ALL'>('ALL');
+  const [selectedCategory, setSelectedCategory] = useState<GameCategory | 'ALL' | 'FAVORITES'>('ALL');
   const [activeGame, setActiveGame] = useState<Game | null>(null);
   const [gameLore, setGameLore] = useState<string | null>(null);
   const [isLoreLoading, setIsLoreLoading] = useState(false);
+  const [favorites, setFavorites] = useState<string[]>([]);
+
+  // Load favorites from local storage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('nebula_arcade_favorites');
+    if (saved) {
+      try {
+        setFavorites(JSON.parse(saved));
+      } catch (e) {
+        console.error("Failed to load favorites", e);
+      }
+    }
+  }, []);
+
+  // Save favorites to local storage on change
+  useEffect(() => {
+    localStorage.setItem('nebula_arcade_favorites', JSON.stringify(favorites));
+  }, [favorites]);
+
+  const toggleFavorite = (gameId: string) => {
+    setFavorites(prev => 
+      prev.includes(gameId) 
+        ? prev.filter(id => id !== gameId) 
+        : [...prev, gameId]
+    );
+  };
 
   const filteredGames = useMemo(() => {
     return GAMES.filter(game => {
       const matchesSearch = game.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
                            game.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+      
+      if (selectedCategory === 'FAVORITES') {
+        return matchesSearch && favorites.includes(game.id);
+      }
+      
       const matchesCategory = selectedCategory === 'ALL' || game.category === selectedCategory;
       return matchesSearch && matchesCategory;
     });
-  }, [searchQuery, selectedCategory]);
+  }, [searchQuery, selectedCategory, favorites]);
 
   const handleGameSelect = async (game: Game) => {
     setActiveGame(game);
@@ -35,6 +67,14 @@ const App: React.FC = () => {
   const closeGame = () => {
     setActiveGame(null);
     setGameLore(null);
+  };
+
+  const renderInternalGame = (id: string) => {
+    switch(id) {
+      case 'nebula-snake': return <NebulaSnakeGame />;
+      case 'neural-math': return <NeuralMathMatrix />;
+      default: return <div className="p-20 text-center uppercase tracking-widest text-red-500">Internal Link Failure: Missing Component</div>;
+    }
   };
 
   return (
@@ -74,9 +114,14 @@ const App: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-6 text-[10px] font-bold tracking-widest uppercase text-slate-500">
-          <a href="#" className="hover:text-cyan-400 transition-colors">Archive</a>
+          <button 
+            onClick={() => setSelectedCategory('FAVORITES')}
+            className={`hover:text-cyan-400 transition-colors uppercase ${selectedCategory === 'FAVORITES' ? 'text-cyan-400' : ''}`}
+          >
+            Favorites ({favorites.length})
+          </button>
           <a href="#" className="hover:text-cyan-400 transition-colors">Terminals</a>
-          <div className="px-3 py-1 border border-cyan-500/30 rounded text-cyan-400">
+          <div className="px-3 py-1 border border-cyan-500/30 rounded text-cyan-400 hidden sm:block">
             System Online
           </div>
         </div>
@@ -99,11 +144,17 @@ const App: React.FC = () => {
               Zero-latency gaming from the edge of the galaxy.
             </p>
             <div className="flex flex-wrap gap-4">
-              <button className="bg-cyan-500 text-black px-8 py-3 rounded-lg font-bold font-futuristic text-sm hover:bg-cyan-400 hover:shadow-[0_0_20px_rgba(34,211,238,0.5)] transition-all uppercase">
+              <button 
+                onClick={() => setSelectedCategory('ALL')}
+                className="bg-cyan-500 text-black px-8 py-3 rounded-lg font-bold font-futuristic text-sm hover:bg-cyan-400 hover:shadow-[0_0_20px_rgba(34,211,238,0.5)] transition-all uppercase"
+              >
                 Explore The Void
               </button>
-              <button className="border border-slate-700 hover:border-slate-500 px-8 py-3 rounded-lg font-bold font-futuristic text-sm transition-all uppercase">
-                Patch Notes v4.2
+              <button 
+                onClick={() => setSelectedCategory('FAVORITES')}
+                className="border border-magenta-500/50 text-magenta-400 hover:border-magenta-500 px-8 py-3 rounded-lg font-bold font-futuristic text-sm transition-all uppercase"
+              >
+                My Favorites
               </button>
             </div>
           </div>
@@ -111,7 +162,7 @@ const App: React.FC = () => {
 
         {/* Categories */}
         <div className="flex items-center gap-4 mb-8 overflow-x-auto pb-4 no-scrollbar">
-          {['ALL', ...Object.values(GameCategory)].map((cat) => (
+          {['ALL', 'FAVORITES', ...Object.values(GameCategory)].map((cat) => (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat as any)}
@@ -130,12 +181,20 @@ const App: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredGames.length > 0 ? (
             filteredGames.map(game => (
-              <GameCard key={game.id} game={game} onSelect={handleGameSelect} />
+              <GameCard 
+                key={game.id} 
+                game={game} 
+                onSelect={handleGameSelect} 
+                isFavorite={favorites.includes(game.id)}
+                onToggleFavorite={() => toggleFavorite(game.id)}
+              />
             ))
           ) : (
             <div className="col-span-full py-20 text-center">
               <p className="text-slate-500 font-futuristic tracking-widest text-lg uppercase animate-pulse">
-                Zero matching signatures found in the archive...
+                {selectedCategory === 'FAVORITES' 
+                  ? "No favorited neural links found..." 
+                  : "Zero matching signatures found in the archive..."}
               </p>
             </div>
           )}
@@ -164,9 +223,12 @@ const App: React.FC = () => {
                 </h2>
               </div>
               <div className="flex items-center gap-3">
-                <button className="p-2 text-slate-400 hover:text-white">
-                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                <button 
+                  onClick={() => toggleFavorite(activeGame.id)}
+                  className={`p-2 transition-colors ${favorites.includes(activeGame.id) ? 'text-magenta-500' : 'text-slate-400 hover:text-white'}`}
+                >
+                   <svg className="w-6 h-6" fill={favorites.includes(activeGame.id) ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                   </svg>
                 </button>
                 <button 
@@ -183,7 +245,7 @@ const App: React.FC = () => {
               {/* Game Renderer */}
               <div className="flex-1 relative overflow-hidden">
                  {activeGame.url === 'internal' ? (
-                   <NebulaSnakeGame />
+                   renderInternalGame(activeGame.id)
                  ) : (
                    <iframe 
                     src={activeGame.url} 
@@ -232,8 +294,8 @@ const App: React.FC = () => {
                 <div className="mt-auto">
                    <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Controls</h4>
                    <div className="grid grid-cols-2 gap-2">
-                      <div className="bg-slate-950 p-2 rounded text-[9px] border border-slate-800 text-center">WASD / SWIPE</div>
-                      <div className="bg-slate-950 p-2 rounded text-[9px] border border-slate-800 text-center">SPACE / TAP</div>
+                      <div className="bg-slate-950 p-2 rounded text-[9px] border border-slate-800 text-center">INPUT VALUE</div>
+                      <div className="bg-slate-950 p-2 rounded text-[9px] border border-slate-800 text-center">AUTO-VERIFY</div>
                    </div>
                 </div>
               </div>

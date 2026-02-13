@@ -5,9 +5,11 @@ import { Game } from '../types';
 interface GameCardProps {
   game: Game;
   onSelect: (game: Game) => void;
+  isFavorite: boolean;
+  onToggleFavorite: () => void;
 }
 
-const GameCard: React.FC<GameCardProps> = ({ game, onSelect }) => {
+const GameCard: React.FC<GameCardProps> = ({ game, onSelect, isFavorite, onToggleFavorite }) => {
   return (
     <div 
       onClick={() => onSelect(game)}
@@ -20,6 +22,20 @@ const GameCard: React.FC<GameCardProps> = ({ game, onSelect }) => {
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-80" />
+        
+        {/* Favorite Button */}
+        <button 
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleFavorite();
+          }}
+          className={`absolute top-2 right-2 p-1.5 rounded-full glass-panel border border-white/10 transition-all z-20 ${isFavorite ? 'text-magenta-500 shadow-[0_0_10px_rgba(232,121,249,0.4)]' : 'text-slate-400 hover:text-white'}`}
+        >
+          <svg className="w-4 h-4" fill={isFavorite ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+          </svg>
+        </button>
+
         <div className="absolute top-2 left-2 bg-cyan-500/80 px-2 py-0.5 rounded text-[10px] font-bold text-black uppercase tracking-widest">
           {game.category}
         </div>
