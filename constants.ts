@@ -23,6 +23,57 @@ export const GAMES: Game[] = [
     url: 'internal'
   },
   {
+    id: 'load-up-and-kill',
+    title: 'LOAD UP AND KILL',
+    category: GameCategory.ACTION,
+    thumbnail: 'https://images.unsplash.com/photo-1595590424283-b8f17842773f?auto=format&fit=crop&q=80&w=400&h=250',
+    description: 'Equip advanced ballistic modules and neutralize high-threat synthetic targets in this specialized weapon-sync simulation. Precision calibration required.',
+    rating: 4.7,
+    tags: ['combat', 'weapons', 'simulation'],
+    url: 'https://load-up-and-kill.game-files.crazygames.com/ruffle/load-up-and-kill/1/load-up-and-kill.html?skipPrerollFirstSession=true&v=1.350'
+  },
+  {
+    id: 'madness-accelerant',
+    title: 'MADNESS ACCELERANT',
+    category: GameCategory.ACTION,
+    thumbnail: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=400&h=250',
+    description: 'Accelerate your neural combat reflexes. Engage in high-velocity ballistic engagement against hyper-aggressive biomechanical targets in this frantic combat sequence.',
+    rating: 4.8,
+    tags: ['combat', 'fast-paced', 'reflex'],
+    url: 'https://madness-accelerant.game-files.crazygames.com/ruffle/madness-accelerant/1/Madness%20Accelerant.html?skipPrerollFirstSession=true&v=1.350'
+  },
+  {
+    id: 'madness-project-nexus',
+    title: 'MADNESS PROJECT NEXUS',
+    category: GameCategory.ACTION,
+    thumbnail: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&q=80&w=400&h=250',
+    description: 'Enter the Nexus Protocol. Engage in high-fidelity tactical combat simulations against rogue atmospheric units in this brutal arena-based training module.',
+    rating: 4.9,
+    tags: ['combat', 'arena', 'tactical'],
+    url: 'https://madness-project-nexus.game-files.crazygames.com/ruffle/madness-project-nexus/1/MadnessNexus.html?skipPrerollFirstSession=true&v=1.350'
+  },
+  {
+    id: 'eagle-ride',
+    title: 'EAGLE RIDE',
+    category: GameCategory.DRIVING,
+    thumbnail: 'https://images.unsplash.com/photo-1444464666168-49d633b86797?auto=format&fit=crop&q=80&w=400&h=250',
+    description: 'Pilot a high-speed avian drone through dense obstacle fields. Maintain maximum velocity while dodging environmental hazards in this terminal-speed simulation.',
+    rating: 4.7,
+    tags: ['flight', 'reflex', 'high-speed'],
+    url: 'https://eagle-ride.game-files.crazygames.com/unity/unity2020/eagle-ride.html?skipPrerollFirstSession=true&v=1.350',
+    warning: 'SIGNAL INSTABILITY DETECTED: MODULE MAY OCCASIONALLY FAIL TO INITIALIZE.'
+  },
+  {
+    id: 'toss-the-turtle',
+    title: 'TOSS THE TURTLE',
+    category: GameCategory.ACTION,
+    thumbnail: 'https://images.unsplash.com/photo-1548883354-94bcfe321cbb?auto=format&fit=crop&q=80&w=400&h=250',
+    description: 'Launch kinetic biological units across the wasteland sector to test long-range propulsion protocols. Upgrade your orbital launch systems to maximize displacement data.',
+    rating: 4.8,
+    tags: ['launcher', 'classic', 'upgrades'],
+    url: 'https://toss-the-turtle.game-files.crazygames.com/ruffle/tosstheturtle.html?isNewUser=true&skipPrerollFirstSession=true&v=1.350'
+  },
+  {
     id: 'moto-x3m',
     title: 'MOTO X3M',
     category: GameCategory.DRIVING,

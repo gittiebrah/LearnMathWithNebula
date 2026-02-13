@@ -8,6 +8,7 @@ export interface Game {
   rating: number;
   tags: string[];
   url: string;
+  warning?: string;
 }
 
 export enum GameCategory {

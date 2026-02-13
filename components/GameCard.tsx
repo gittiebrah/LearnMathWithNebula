@@ -39,6 +39,15 @@ const GameCard: React.FC<GameCardProps> = ({ game, onSelect, isFavorite, onToggl
         <div className="absolute top-2 left-2 bg-cyan-500/80 px-2 py-0.5 rounded text-[10px] font-bold text-black uppercase tracking-widest">
           {game.category}
         </div>
+
+        {game.warning && (
+          <div className="absolute bottom-2 left-2 flex items-center gap-1.5 bg-red-600/90 text-[8px] font-black text-white px-2 py-0.5 rounded animate-pulse uppercase tracking-tighter">
+            <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            De-Sync Risk
+          </div>
+        )}
       </div>
       
       <div className="p-4">

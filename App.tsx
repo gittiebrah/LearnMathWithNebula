@@ -8,7 +8,6 @@ import NeuralMathMatrix from './components/NeuralMathMatrix';
 import GameRequestModal from './components/GameRequestModal';
 import GameIframe from './components/GameIframe';
 import LoadingSequence from './components/LoadingSequence';
-import AIAssistant from './components/AIAssistant';
 
 const App: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -270,6 +269,20 @@ const App: React.FC = () => {
 
               {/* Sidebar Stats */}
               <div className="w-full md:w-80 bg-slate-900/50 p-6 flex flex-col gap-6 overflow-y-auto no-scrollbar">
+                {activeGame.warning && (
+                  <div className="p-4 bg-red-950/40 border border-red-500/30 rounded-lg animate-pulse">
+                    <h4 className="text-[10px] font-black text-red-500 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      </svg>
+                      Neural Alert
+                    </h4>
+                    <p className="text-[10px] text-red-200/80 leading-relaxed font-mono italic">
+                      {activeGame.warning}
+                    </p>
+                  </div>
+                )}
+
                 <div>
                   <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Technical Analysis</h4>
                   <div className="p-3 bg-slate-950/50 border border-slate-800 rounded-lg">
@@ -292,7 +305,9 @@ const App: React.FC = () => {
                     </div>
                     <div className="flex justify-between text-[10px]">
                       <span className="text-slate-500 uppercase">Status</span>
-                      <span className="text-slate-300">Verified Stable</span>
+                      <span className={`${activeGame.warning ? 'text-amber-500' : 'text-slate-300'}`}>
+                        {activeGame.warning ? 'Marginal Stability' : 'Verified Stable'}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -309,9 +324,6 @@ const App: React.FC = () => {
           </div>
         </div>
       )}
-
-      {/* AI Assistant */}
-      <AIAssistant />
 
       {/* Game Request Modal */}
       <GameRequestModal 
