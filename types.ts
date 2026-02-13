@@ -20,7 +20,14 @@ export enum GameCategory {
   SCIFI = 'Sci-Fi'
 }
 
+export enum Theme {
+  SCIFI = 'SCIFI',
+  STEALTH = 'STEALTH',
+  CYBERPUNK = 'CYBERPUNK'
+}
+
 export interface UserState {
   favorites: string[];
   recent: string[];
+  theme: Theme;
 }

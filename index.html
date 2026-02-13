@@ -6,56 +6,112 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NEBULA ARCADE | Unblocked Sci-Fi Gaming</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=JetBrains+Mono:wght@300;400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=JetBrains+Mono:wght@300;400;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg-main: #020617;
+      --bg-panel: rgba(15, 23, 42, 0.7);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-primary: #22d3ee;
+      --accent-secondary: #e879f9;
+      --accent-glow: rgba(34, 211, 238, 0.5);
+      --font-display: 'Orbitron', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --border-color: rgba(34, 211, 238, 0.4);
+      --glow-strength: 10px;
+    }
+
+    [data-theme='STEALTH'] {
+      --bg-main: #f8fafc;
+      --bg-panel: rgba(255, 255, 255, 0.95);
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --accent-primary: #2563eb;
+      --accent-secondary: #475569;
+      --accent-glow: rgba(37, 99, 235, 0.1);
+      --font-display: 'Inter', sans-serif;
+      --font-mono: 'Inter', sans-serif;
+      --border-color: #e2e8f0;
+      --glow-strength: 0px;
+    }
+
+    [data-theme='CYBERPUNK'] {
+      --bg-main: #000000;
+      --bg-panel: rgba(10, 10, 10, 0.85);
+      --text-main: #ffffff;
+      --text-muted: #cccccc;
+      --accent-primary: #facc15;
+      --accent-secondary: #f43f5e;
+      --accent-glow: rgba(250, 204, 21, 0.6);
+      --font-display: 'Orbitron', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --border-color: rgba(250, 204, 21, 0.5);
+      --glow-strength: 15px;
+    }
+
     body {
-      background-color: #020617;
-      color: #f8fafc;
-      font-family: 'JetBrains+Mono', monospace;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      font-family: var(--font-mono);
       margin: 0;
       overflow-x: hidden;
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
-    h1, h2, h3, .font-futuristic {
-      font-family: 'Orbitron', sans-serif;
+
+    .font-futuristic {
+      font-family: var(--font-display);
     }
+
     .neon-border {
-      box-shadow: 0 0 10px rgba(34, 211, 238, 0.5), inset 0 0 5px rgba(34, 211, 238, 0.2);
-      border: 1px solid rgba(34, 211, 238, 0.4);
+      box-shadow: 0 0 var(--glow-strength) var(--accent-glow);
+      border: 1px solid var(--border-color);
     }
+
     .neon-text-cyan {
-      text-shadow: 0 0 8px rgba(34, 211, 238, 0.8);
+      text-shadow: 0 0 8px var(--accent-primary);
     }
-    .neon-text-magenta {
-      text-shadow: 0 0 8px rgba(232, 121, 249, 0.8);
-    }
+
     .glass-panel {
-      background: rgba(15, 23, 42, 0.7);
+      background: var(--bg-panel);
       backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.05);
     }
+
     ::-webkit-scrollbar {
       width: 6px;
     }
     ::-webkit-scrollbar-track {
-      background: #020617;
+      background: var(--bg-main);
     }
     ::-webkit-scrollbar-thumb {
-      background: #22d3ee;
+      background: var(--accent-primary);
       border-radius: 10px;
     }
+
     .scanline {
       width: 100%;
       height: 100px;
       z-index: 10;
-      background: linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(34, 211, 238, 0.1) 50%, rgba(0, 0, 0, 0) 100%);
-      opacity: 0.1;
+      background: linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, var(--accent-glow) 50%, rgba(0, 0, 0, 0) 100%);
+      opacity: 0.05;
       position: absolute;
       bottom: 100%;
       animation: scanline 6s linear infinite;
+      pointer-events: none;
     }
+
     @keyframes scanline {
       0% { bottom: 100%; }
       100% { bottom: -100px; }
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
     }
   </style>
 <script type="importmap">

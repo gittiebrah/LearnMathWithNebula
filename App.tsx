@@ -1,13 +1,15 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { GAMES } from './constants';
-import { Game, GameCategory } from './types';
+import { Game, GameCategory, Theme } from './types';
 import GameCard from './components/GameCard';
 import NebulaSnakeGame from './components/NebulaSnakeGame';
 import NeuralMathMatrix from './components/NeuralMathMatrix';
 import GameRequestModal from './components/GameRequestModal';
+import SettingsModal from './components/SettingsModal';
 import GameIframe from './components/GameIframe';
 import LoadingSequence from './components/LoadingSequence';
+import InitialWarning from './components/InitialWarning';
 
 const App: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -15,32 +17,68 @@ const App: React.FC = () => {
   const [activeGame, setActiveGame] = useState<Game | null>(null);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isBooting, setIsBooting] = useState(true);
+  const [hasAcceptedWarning, setHasAcceptedWarning] = useState(false);
+  
+  // Theme State
+  const [theme, setTheme] = useState<Theme>(Theme.SCIFI);
+  const [showScanlines, setShowScanlines] = useState(true);
 
-  // Check if we've already booted in this session
+  // Load configuration from local storage
   useEffect(() => {
+    // Check warning acceptance first
+    const warningAccepted = sessionStorage.getItem('nebula_warning_accepted');
+    if (warningAccepted === 'true') {
+      setHasAcceptedWarning(true);
+    }
+
+    const savedTheme = localStorage.getItem('nebula_theme') as Theme;
+    if (savedTheme && Object.values(Theme).includes(savedTheme)) {
+      setTheme(savedTheme);
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    }
+
+    const savedScanlines = localStorage.getItem('nebula_scanlines');
+    if (savedScanlines !== null) {
+      setShowScanlines(savedScanlines === 'true');
+    }
+
+    const savedFavorites = localStorage.getItem('nebula_arcade_favorites');
+    if (savedFavorites) {
+      try {
+        setFavorites(JSON.parse(savedFavorites));
+      } catch (e) {
+        console.error("Failed to load favorites", e);
+      }
+    }
+
     const hasBooted = sessionStorage.getItem('nebula_booted');
     if (hasBooted) {
       setIsBooting(false);
     }
   }, []);
 
+  const handleThemeChange = (newTheme: Theme) => {
+    setTheme(newTheme);
+    localStorage.setItem('nebula_theme', newTheme);
+    document.documentElement.setAttribute('data-theme', newTheme);
+  };
+
+  const handleToggleScanlines = (show: boolean) => {
+    setShowScanlines(show);
+    localStorage.setItem('nebula_scanlines', String(show));
+  };
+
   const handleBootComplete = () => {
     setIsBooting(false);
     sessionStorage.setItem('nebula_booted', 'true');
   };
 
-  // Load favorites from local storage on mount
-  useEffect(() => {
-    const saved = localStorage.getItem('nebula_arcade_favorites');
-    if (saved) {
-      try {
-        setFavorites(JSON.parse(saved));
-      } catch (e) {
-        console.error("Failed to load favorites", e);
-      }
-    }
-  }, []);
+  const handleAcceptWarning = () => {
+    setHasAcceptedWarning(true);
+    sessionStorage.setItem('nebula_warning_accepted', 'true');
+  };
 
   // Save favorites to local storage on change
   useEffect(() => {
@@ -85,25 +123,34 @@ const App: React.FC = () => {
     }
   };
 
+  const portalName = theme === Theme.STEALTH ? 'Nebula Portal' : 'Nebula Arcade';
+  const tagline = theme === Theme.STEALTH 
+    ? 'Knowledge archival system for decentralized researchers.' 
+    : 'Encrypted bypass established. Accessing decentralized entertainment matrix.';
+
   return (
-    <div className="min-h-screen relative bg-slate-950 text-slate-200">
-      {/* Loading Sequence */}
-      {isBooting && <LoadingSequence onComplete={handleBootComplete} />}
+    <div className="min-h-screen relative bg-[var(--bg-main)] text-[var(--text-main)] transition-colors duration-300">
+      
+      {/* 1. Initial Legal Warning - Shown first if not accepted */}
+      {!hasAcceptedWarning && <InitialWarning onAccept={handleAcceptWarning} />}
+
+      {/* 2. Loading Sequence - Shown if booting and warning accepted */}
+      {isBooting && hasAcceptedWarning && <LoadingSequence onComplete={handleBootComplete} />}
 
       {/* Background Decorative elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none opacity-20">
-        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,_#1e293b_0%,_transparent_50%)]"></div>
-        <div className="scanline"></div>
+        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,_var(--accent-glow)_0%,_transparent_50%)]"></div>
+        {showScanlines && <div className="scanline"></div>}
       </div>
 
       {/* Navigation */}
-      <nav className="sticky top-0 z-40 glass-panel border-b border-cyan-500/20 px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
+      <nav className="sticky top-0 z-40 glass-panel border-b border-white/5 px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-cyan-500 rounded flex items-center justify-center font-black text-black text-2xl tracking-tighter">
-            N
+          <div className="w-10 h-10 bg-[var(--accent-primary)] rounded flex items-center justify-center font-black text-black text-2xl tracking-tighter transition-all duration-300">
+            {theme === Theme.STEALTH ? 'N' : 'N'}
           </div>
-          <h1 className="text-xl md:text-2xl font-black font-futuristic tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600 uppercase">
-            Nebula Arcade
+          <h1 className="text-xl md:text-2xl font-black font-futuristic tracking-tighter uppercase text-[var(--accent-primary)]">
+            {portalName}
           </h1>
         </div>
 
@@ -111,12 +158,12 @@ const App: React.FC = () => {
           <div className="relative group">
             <input 
               type="text" 
-              placeholder="SCAN FOR TITLES OR TAGS..."
-              className="w-full bg-slate-900/50 border border-slate-700/50 rounded-full px-5 py-2.5 text-xs focus:outline-none focus:border-cyan-500 transition-all font-futuristic tracking-widest placeholder:text-slate-600"
+              placeholder={theme === Theme.STEALTH ? "Search database..." : "SCAN FOR TITLES OR TAGS..."}
+              className="w-full bg-[var(--bg-main)] border border-[var(--border-color)] rounded-full px-5 py-2.5 text-xs focus:outline-none focus:border-[var(--accent-primary)] transition-all font-futuristic tracking-widest placeholder:text-[var(--text-muted)]"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
-            <div className="absolute right-4 top-2.5 text-cyan-500/50">
+            <div className="absolute right-4 top-2.5 text-[var(--accent-primary)] opacity-50">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
@@ -124,22 +171,28 @@ const App: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-4 sm:gap-6 text-[10px] font-bold tracking-widest uppercase text-slate-500">
+        <div className="flex items-center gap-4 sm:gap-6 text-[10px] font-bold tracking-widest uppercase text-[var(--text-muted)]">
           <button 
             onClick={() => setSelectedCategory('FAVORITES')}
-            className={`hover:text-cyan-400 transition-colors uppercase ${selectedCategory === 'FAVORITES' ? 'text-cyan-400' : ''}`}
+            className={`hover:text-[var(--accent-primary)] transition-colors uppercase ${selectedCategory === 'FAVORITES' ? 'text-[var(--accent-primary)]' : ''}`}
           >
             Favorites ({favorites.length})
           </button>
           <button 
+            onClick={() => setIsSettingsModalOpen(true)}
+            className="hover:text-[var(--accent-primary)] transition-colors uppercase flex items-center gap-1.5"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            </svg>
+            Settings
+          </button>
+          <button 
             onClick={() => setIsRequestModalOpen(true)}
-            className="hover:text-magenta-400 transition-colors uppercase text-magenta-500/80"
+            className="hover:text-[var(--accent-secondary)] transition-colors uppercase text-[var(--accent-secondary)] opacity-80"
           >
             Request
           </button>
-          <div className="px-3 py-1 border border-cyan-500/30 rounded text-cyan-400 hidden lg:block">
-            System Online
-          </div>
         </div>
       </nav>
 
@@ -149,26 +202,25 @@ const App: React.FC = () => {
         {/* Hero Section */}
         <section className="mb-12 relative rounded-2xl overflow-hidden p-8 md:p-16 glass-panel neon-border">
           <div className="absolute top-0 right-0 p-4">
-            <div className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse shadow-[0_0_10px_#06b6d4]"></div>
+            <div className="w-2 h-2 rounded-full bg-[var(--accent-primary)] animate-pulse"></div>
           </div>
           <div className="max-w-2xl">
-            <h2 className="text-4xl md:text-6xl font-black font-futuristic mb-4 neon-text-cyan leading-tight">
-              PLAY WITHOUT <br/>LIMITS
+            <h2 className="text-4xl md:text-6xl font-black font-futuristic mb-4 neon-text-cyan leading-tight text-[var(--accent-primary)]">
+              {theme === Theme.STEALTH ? 'OPEN ARCHIVE ACCESS' : 'PLAY WITHOUT LIMITS'}
             </h2>
-            <p className="text-slate-400 text-sm md:text-base leading-relaxed mb-8 font-light italic">
-              Encrypted bypass established. Accessing decentralized entertainment matrix. 
-              Zero-latency gaming from the edge of the galaxy.
+            <p className="text-[var(--text-muted)] text-sm md:text-base leading-relaxed mb-8 font-light italic uppercase tracking-wider">
+              {tagline}
             </p>
             <div className="flex flex-wrap gap-4">
               <button 
                 onClick={() => setSelectedCategory('ALL')}
-                className="bg-cyan-500 text-black px-8 py-3 rounded-lg font-bold font-futuristic text-sm hover:bg-cyan-400 hover:shadow-[0_0_20px_rgba(34,211,238,0.5)] transition-all uppercase"
+                className="bg-[var(--accent-primary)] text-black px-8 py-3 rounded-lg font-bold font-futuristic text-sm hover:opacity-90 transition-all uppercase"
               >
-                Explore The Void
+                {theme === Theme.STEALTH ? 'Browse Archive' : 'Explore The Void'}
               </button>
               <button 
                 onClick={() => setIsRequestModalOpen(true)}
-                className="border border-magenta-500/50 text-magenta-400 hover:border-magenta-500 px-8 py-3 rounded-lg font-bold font-futuristic text-sm transition-all uppercase"
+                className="border border-[var(--accent-secondary)] text-[var(--accent-secondary)] hover:bg-[var(--accent-secondary)]/10 px-8 py-3 rounded-lg font-bold font-futuristic text-sm transition-all uppercase"
               >
                 Request Protocol
               </button>
@@ -184,8 +236,8 @@ const App: React.FC = () => {
               onClick={() => setSelectedCategory(cat as any)}
               className={`px-4 py-2 rounded-lg text-[10px] font-bold font-futuristic uppercase tracking-tighter whitespace-nowrap transition-all border ${
                 selectedCategory === cat 
-                ? 'bg-cyan-500 border-cyan-400 text-black shadow-[0_0_15px_rgba(34,211,238,0.4)]' 
-                : 'bg-slate-900 border-slate-800 text-slate-500 hover:text-slate-300 hover:border-slate-700'
+                ? 'bg-[var(--accent-primary)] border-[var(--accent-primary)] text-black shadow-[0_0_15px_var(--accent-glow)]' 
+                : 'bg-black/20 border-white/5 text-[var(--text-muted)] hover:text-[var(--text-main)] hover:border-white/20'
               }`}
             >
               {cat}
@@ -207,7 +259,7 @@ const App: React.FC = () => {
             ))
           ) : (
             <div className="col-span-full py-20 text-center">
-              <p className="text-slate-500 font-futuristic tracking-widest text-lg uppercase animate-pulse">
+              <p className="text-[var(--text-muted)] font-futuristic tracking-widest text-lg uppercase animate-pulse">
                 {selectedCategory === 'FAVORITES' 
                   ? "No favorited neural links found..." 
                   : "Zero matching signatures found in the archive..."}
@@ -217,31 +269,46 @@ const App: React.FC = () => {
         </div>
       </main>
 
+      {/* Modals */}
+      <GameRequestModal 
+        isOpen={isRequestModalOpen} 
+        onClose={() => setIsRequestModalOpen(false)} 
+      />
+
+      <SettingsModal
+        isOpen={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
+        currentTheme={theme}
+        onThemeChange={handleThemeChange}
+        showScanlines={showScanlines}
+        onToggleScanlines={handleToggleScanlines}
+      />
+
       {/* Game Play Overlay */}
       {activeGame && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8 animate-in fade-in duration-300">
-          <div className="absolute inset-0 bg-slate-950/95 backdrop-blur-xl" onClick={closeGame}></div>
+          <div className="absolute inset-0 bg-black/90 backdrop-blur-xl" onClick={closeGame}></div>
           
           <div className="relative w-full max-w-6xl h-full flex flex-col glass-panel rounded-2xl overflow-hidden neon-border shadow-[0_0_50px_rgba(0,0,0,0.8)]">
             {/* Game Header */}
-            <div className="p-4 bg-slate-900/50 flex items-center justify-between border-b border-slate-800">
+            <div className="p-4 bg-black/40 flex items-center justify-between border-b border-white/5">
               <div className="flex items-center gap-4">
                 <button 
                   onClick={closeGame}
-                  className="p-2 text-slate-400 hover:text-white transition-colors"
+                  className="p-2 text-[var(--text-muted)] hover:text-white transition-colors"
                 >
                   <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                   </svg>
                 </button>
-                <h2 className="text-xl font-futuristic text-cyan-400 uppercase tracking-widest">
+                <h2 className="text-xl font-futuristic text-[var(--accent-primary)] uppercase tracking-widest">
                   {activeGame.title}
                 </h2>
               </div>
               <div className="flex items-center gap-3">
                 <button 
                   onClick={() => toggleFavorite(activeGame.id)}
-                  className={`p-2 transition-colors ${favorites.includes(activeGame.id) ? 'text-magenta-500' : 'text-slate-400 hover:text-white'}`}
+                  className={`p-2 transition-colors ${favorites.includes(activeGame.id) ? 'text-[var(--accent-secondary)]' : 'text-[var(--text-muted)] hover:text-white'}`}
                 >
                    <svg className="w-6 h-6" fill={favorites.includes(activeGame.id) ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
@@ -258,7 +325,6 @@ const App: React.FC = () => {
 
             {/* Game Content */}
             <div className="flex-1 flex flex-col md:flex-row bg-black overflow-hidden">
-              {/* Game Renderer */}
               <div className="flex-1 relative overflow-hidden">
                  {activeGame.url === 'internal' ? (
                    renderInternalGame(activeGame.id)
@@ -266,58 +332,18 @@ const App: React.FC = () => {
                    <GameIframe url={activeGame.url} title={activeGame.title} />
                  )}
               </div>
-
-              {/* Sidebar Stats */}
-              <div className="w-full md:w-80 bg-slate-900/50 p-6 flex flex-col gap-6 overflow-y-auto no-scrollbar">
+              <div className="w-full md:w-80 bg-slate-900/20 p-6 flex flex-col gap-6 overflow-y-auto no-scrollbar border-l border-white/5">
                 {activeGame.warning && (
-                  <div className="p-4 bg-red-950/40 border border-red-500/30 rounded-lg animate-pulse">
-                    <h4 className="text-[10px] font-black text-red-500 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
-                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                      </svg>
-                      Neural Alert
-                    </h4>
-                    <p className="text-[10px] text-red-200/80 leading-relaxed font-mono italic">
-                      {activeGame.warning}
-                    </p>
+                  <div className="p-4 bg-red-950/20 border border-red-500/20 rounded-lg animate-pulse">
+                    <h4 className="text-[10px] font-black text-red-500 uppercase tracking-[0.2em] mb-2">Neural Alert</h4>
+                    <p className="text-[10px] text-red-200/60 leading-relaxed italic">{activeGame.warning}</p>
                   </div>
                 )}
-
                 <div>
-                  <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Technical Analysis</h4>
-                  <div className="p-3 bg-slate-950/50 border border-slate-800 rounded-lg">
-                    <p className="text-xs text-slate-300 leading-relaxed">
-                      {activeGame.description}
-                    </p>
+                  <h4 className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest mb-2">Briefing</h4>
+                  <div className="p-3 bg-black/20 border border-white/5 rounded-lg text-xs text-[var(--text-muted)] leading-relaxed italic">
+                    {activeGame.description}
                   </div>
-                </div>
-
-                <div>
-                  <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Technical Specs</h4>
-                  <div className="space-y-3">
-                    <div className="flex justify-between text-[10px]">
-                      <span className="text-slate-500 uppercase">Source</span>
-                      <span className="text-green-500">Local Archive</span>
-                    </div>
-                    <div className="flex justify-between text-[10px]">
-                      <span className="text-slate-500 uppercase">Uptime</span>
-                      <span className="text-cyan-400">99.9%</span>
-                    </div>
-                    <div className="flex justify-between text-[10px]">
-                      <span className="text-slate-500 uppercase">Status</span>
-                      <span className={`${activeGame.warning ? 'text-amber-500' : 'text-slate-300'}`}>
-                        {activeGame.warning ? 'Marginal Stability' : 'Verified Stable'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-auto">
-                   <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Controls</h4>
-                   <div className="grid grid-cols-2 gap-2">
-                      <div className="bg-slate-950 p-2 rounded text-[9px] border border-slate-800 text-center uppercase">Standard Input</div>
-                      <div className="bg-slate-950 p-2 rounded text-[9px] border border-slate-800 text-center uppercase">Interactive</div>
-                   </div>
                 </div>
               </div>
             </div>
@@ -325,44 +351,29 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {/* Game Request Modal */}
-      <GameRequestModal 
-        isOpen={isRequestModalOpen} 
-        onClose={() => setIsRequestModalOpen(false)} 
-      />
-
       {/* Footer */}
-      <footer className="border-t border-slate-900 bg-slate-950 py-12 px-6 mt-20 relative z-10">
+      <footer className="border-t border-white/5 bg-black/20 py-12 px-6 mt-20 relative z-10">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-8">
           <div className="max-w-xs">
              <div className="flex items-center gap-2 mb-4">
-              <div className="w-6 h-6 bg-cyan-500 rounded flex items-center justify-center font-black text-black text-sm">N</div>
-              <h2 className="font-futuristic text-cyan-400 tracking-tighter">NEBULA ARCADE</h2>
+              <div className="w-6 h-6 bg-[var(--accent-primary)] rounded flex items-center justify-center font-black text-black text-sm">N</div>
+              <h2 className="font-futuristic text-[var(--accent-primary)] tracking-tighter uppercase">{portalName}</h2>
             </div>
-            <p className="text-[10px] text-slate-500 leading-relaxed uppercase tracking-wider">
-              An independent, decentralized portal for web entertainment. 
-              Circumventing filters since the collapse of the central cloud.
+            <p className="text-[10px] text-[var(--text-muted)] leading-relaxed uppercase tracking-wider">
+              {theme === Theme.STEALTH ? 'Educational repository version 4.2. Secure connection active.' : 'An independent, decentralized portal for web entertainment.'}
             </p>
           </div>
-          
           <div className="flex gap-16">
             <div className="flex flex-col gap-3">
-              <h5 className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Network</h5>
-              <a href="#" className="text-[10px] text-slate-500 hover:text-cyan-400 uppercase">Mainframe</a>
-              <button onClick={() => setIsRequestModalOpen(true)} className="text-[10px] text-left text-slate-500 hover:text-cyan-400 uppercase">Submit Suggestion</button>
-              <a href="#" className="text-[10px] text-slate-500 hover:text-cyan-400 uppercase">Protocols</a>
-            </div>
-            <div className="flex flex-col gap-3">
-              <h5 className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Support</h5>
-              <a href="#" className="text-[10px] text-slate-500 hover:text-cyan-400 uppercase">Comms</a>
-              <a href="#" className="text-[10px] text-slate-500 hover:text-cyan-400 uppercase">Encrypted</a>
-              <a href="#" className="text-[10px] text-slate-500 hover:text-cyan-400 uppercase">FAQ</a>
+              <h5 className="text-[10px] font-bold text-[var(--text-main)] uppercase tracking-widest">Network</h5>
+              <button onClick={() => setIsSettingsModalOpen(true)} className="text-[10px] text-left text-[var(--text-muted)] hover:text-[var(--accent-primary)] uppercase">Settings</button>
+              <button onClick={() => setIsRequestModalOpen(true)} className="text-[10px] text-left text-[var(--text-muted)] hover:text-[var(--accent-primary)] uppercase">Submit Protocol</button>
             </div>
           </div>
         </div>
-        <div className="max-w-7xl mx-auto mt-12 pt-8 border-t border-slate-900 text-[9px] text-slate-600 flex justify-between uppercase tracking-widest">
+        <div className="max-w-7xl mx-auto mt-12 pt-8 border-t border-white/5 text-[9px] text-[var(--text-muted)] flex justify-between uppercase tracking-widest">
           <span>&copy; 2350 Nebula Systems</span>
-          <span>Security Clearance: LEVEL 4</span>
+          <span>Security Clearance: {theme === Theme.STEALTH ? 'UNRESTRICTED' : 'LEVEL 4'}</span>
         </div>
       </footer>
     </div>
