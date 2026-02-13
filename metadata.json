@@ -1,0 +1,8 @@
+{
+  "name": "NEBULA ARCADE",
+  "description": "A futuristic sci-fi themed unblocked games portal with AI-powered game recommendations and immersive neon aesthetics.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
